@@ -24,6 +24,32 @@
 
 ---
 
+## Step 2:Supabaseのテーブル・インデックス・RLSの作成
+
+### やったこと
+- Supabaseのプロジェクトを作成した(リージョンは東京)
+- 作成時のセキュリティ設定は、「Enable Data API」をオン、「Automatically expose new tables」をオフ、「Enable automatic RLS」をオンにした
+- SQL Editorで、`uploads`(取り込み1回分)と `sales`(明細)のテーブル、インデックス5つ、RLSのポリシーを作成した
+- `@supabase/supabase-js` と `@supabase/ssr` をインストールした
+- `.env.local` に接続先のURLとPublishable keyを設定し、`.env.example` に項目名だけを書いた
+
+### 学んだこと
+- RLS(行レベルセキュリティ)を有効にすると、ポリシーで許可した操作しかできなくなる。今回は「ログイン済み(`authenticated`)なら読み書きできる」ポリシーだけを付けたので、ログインしていない人(`anon`)はキーを知っていてもデータを扱えない
+- 「Automatically expose new tables」をオフにすると、テーブルを操作する権限が自動では付かない。`grant` で、ログイン済みのロールにだけ権限を付けた。権限とRLSの二重で守る形になる
+- Publishable keyはブラウザに出てもよいキーで、データはRLSで守る。Secret keyはRLSを無視できるので、ブラウザ側のコードや `.env.local` には入れない
+- 古い形式のキー(anon / service_role)は2027年に廃止予定のため、新しい形式のPublishable keyを使った。環境変数名も `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` にした
+- `check` 制約で、`status` に決めた3つ(pending / active / replaced)以外の値を入れられないようにできる
+- `on delete cascade` を付けると、取り込み履歴(`uploads`)を消したときに、その明細(`sales`)もまとめて消える
+- SQL Editorの「Run」で実行した時点で、データベースに反映される。「Save」はSQLの文章を残すだけ
+- インストールしたバージョンは、`@supabase/supabase-js` 2.119.0、`@supabase/ssr` 0.12.7だった
+
+### つまずいた点と解決方法
+- **症状**:コミット前の確認で、`.env.example` の中身が空(0バイト)になっていた
+- **原因**:ファイルを作成したあと、項目名を書いた内容が保存されていなかった
+- **解決**:`NEXT_PUBLIC_SUPABASE_URL=` と `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=` の2行を書いて保存し直した。ファイルは作るだけでなく、中身が保存されているかも確認する
+
+---
+
 ## 振り返り
 
 - **うまくいったこと**:{}
@@ -41,6 +67,11 @@
 | `npm run dev` | 開発用のサーバーを起動する。`Ctrl + C` で止める |
 | `git init` | 今いるフォルダを、新しいGitのリポジトリにする(`.git` フォルダが作られる) |
 | `git status` | 変更されたファイルや、まだGitに登録していないファイルを一覧で表示する |
+| `create policy` | RLSのポリシー(誰に、どの操作を許可するか)を作る |
+| `grant` | ロールに、テーブルを操作する権限を付ける |
+| `on delete cascade` | 親の行を消したとき、それを参照する子の行もまとめて消す |
+| `check (...)` | 列に入れられる値の条件を決める制約 |
+| `npm install @supabase/supabase-js @supabase/ssr` | Supabaseにつなぐためのパッケージを入れる。`ssr` はログイン情報をCookieで扱うためのもの |
 
 ### 用語
 
@@ -49,3 +80,9 @@
 | リポジトリ | Gitがファイルの変更履歴を管理する単位。`.git` フォルダに履歴が保存される |
 | KPI | 目標の達成度を測るための重要な指標。今回は売上合計と前年同期比 |
 | 前年同期比 | 今期の売上が、1年前の同じ期間に比べてどれだけ増減したかの割合 |
+| RLS(Row Level Security) | 行レベルセキュリティ。ポリシーで許可した人・操作だけがデータを扱えるようにする仕組み |
+| ポリシー | RLSで「誰に、どの操作を許可するか」を決めたルール |
+| ロール | データベースを使う立場。Supabaseでは、ログインしていない人が `anon`、ログイン済みの人が `authenticated` |
+| Publishable key | ブラウザに出してもよいSupabaseのキー。データはRLSで守る |
+| Secret key | RLSを無視して全データを操作できるキー。サーバー側だけで使い、公開しない |
+| インデックス | 検索や集計を速くするための索引。よく絞り込む列に付ける |
