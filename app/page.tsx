@@ -1,20 +1,20 @@
 // ダッシュボード
 // cacheComponents が有効なので、データを読む部分(Dashboard)を <Suspense> で囲む。
-// 見出しなどの外枠は先に表示され、集計はあとから流れ込む
+// 見出しなどの外枠は先に表示され、集計はあとから流れ込む。
+// URLのパラメーター(searchParams)もリクエストごとに変わる値なので、
+// ページでは await せず、<Suspense> の中の Dashboard に渡してから読む
 import { Suspense } from "react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import ReloadButton from "@/app/components/ReloadButton";
 import KpiCards from "@/app/components/dashboard/KpiCards";
+import FilterBar from "@/app/components/dashboard/FilterBar";
 import MonthlyChart from "@/app/components/dashboard/MonthlyChart";
 import ProductTable from "@/app/components/dashboard/ProductTable";
-import {
-  fetchDashboard,
-  fetchOptions,
-  type DashboardFilter,
-} from "@/lib/dashboard/fetchDashboard";
-import { defaultPeriod, monthLabel } from "@/lib/dashboard/period";
+import { fetchDashboard, fetchOptions } from "@/lib/dashboard/fetchDashboard";
+import { parseParams } from "@/lib/dashboard/params";
+import { monthLabel } from "@/lib/dashboard/period";
 
 const dateTime = (iso: string) =>
   new Date(iso).toLocaleString("ja-JP", {
@@ -26,21 +26,25 @@ const dateTime = (iso: string) =>
     minute: "2-digit",
   });
 
-export default function Home() {
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-[#1A1D21] tabular-nums">
       <AppHeader current="/" />
       <main className="mx-auto flex max-w-7xl flex-col gap-5 px-8 py-7">
         <h1 className="text-2xl font-bold">売上サマリー</h1>
         <Suspense fallback={<DashboardSkeleton />}>
-          <Dashboard />
+          <Dashboard searchParams={searchParams} />
         </Suspense>
       </main>
     </div>
   );
 }
 
-async function Dashboard() {
+async function Dashboard({
+  searchParams,
+}: {
+  searchParams: PageProps<"/">["searchParams"];
+}) {
   let options;
   try {
     options = await fetchOptions();
@@ -67,12 +71,13 @@ async function Dashboard() {
     );
   }
 
-  // Step 8 は初期の条件だけ(絞り込みの操作は Step 9 で作る)
-  const filter: DashboardFilter = {
-    ...defaultPeriod(options.minMonth, options.maxMonth),
-    categories: [],
-    reps: [],
-  };
+  // URLのパラメーター → 条件(おかしな値は初期値で補う)
+  const { filter, chart } = parseParams(await searchParams, {
+    minMonth: options.minMonth,
+    maxMonth: options.maxMonth,
+    categories: options.categories,
+    reps: options.reps,
+  });
 
   let data;
   try {
@@ -84,7 +89,11 @@ async function Dashboard() {
     return <LoadError />;
   }
 
-  const conditionLabel = `${monthLabel(filter.from)}〜${monthLabel(filter.to)}・全カテゴリ・全担当者`;
+  const conditionLabel = [
+    `${monthLabel(filter.from)}〜${monthLabel(filter.to)}`,
+    filter.categories.length ? filter.categories.join("・") : "全カテゴリ",
+    filter.reps.length ? filter.reps.join("・") : "全担当者",
+  ].join(" / ");
 
   return (
     <>
@@ -95,8 +104,15 @@ async function Dashboard() {
           行)・前年同期=1年前の同じ月
         </p>
       )}
+      <FilterBar
+        filter={filter}
+        minMonth={options.minMonth}
+        maxMonth={options.maxMonth}
+        categories={options.categories}
+        reps={options.reps}
+      />
       <KpiCards kpi={data.kpi} conditionLabel={conditionLabel} />
-      <MonthlyChart rows={data.monthly} />
+      <MonthlyChart rows={data.monthly} initialChart={chart} />
       <ProductTable rows={data.products} total={data.kpi.current} />
     </>
   );
