@@ -1,0 +1,393 @@
+{
+  "source": "sales_replace_2026_10.csv",
+  "encoding": "UTF-8 (BOM付き)",
+  "rowCount": 46,
+  "totalAmount": 93704,
+  "periodFrom": "2026-10-02",
+  "periodTo": "2026-10-31",
+  "mismatchCount": 0,
+  "monthly": {
+    "2026-10": 93704
+  },
+  "byCategory": {
+    "飲料": 17430,
+    "家電": 41500,
+    "食品": 19242,
+    "日用品": 5002,
+    "文具": 10530
+  },
+  "byProduct": {
+    "カップ麺": 990,
+    "コピー用紙A4": 1950,
+    "トイレットペーパー12R": 4784,
+    "ドライヤー": 5980,
+    "パスタ1kg": 7200,
+    "ファイル10冊": 2400,
+    "ボールペン10本": 5280,
+    "レトルトカレー": 1192,
+    "加湿器": 19600,
+    "果汁ジュース": 9000,
+    "缶詰セット": 5880,
+    "食器用洗剤": 218,
+    "炭酸水1L": 6720,
+    "電気ケトル": 15920,
+    "麦茶2L": 630,
+    "付箋セット": 900,
+    "緑茶500ml": 1080,
+    "冷凍餃子": 3980
+  },
+  "byRep": {
+    "伊藤": 7358,
+    "高橋": 7000,
+    "佐藤": 4030,
+    "山本": 5028,
+    "中村": 5820,
+    "田中": 12148,
+    "渡辺": 8750,
+    "鈴木": 43570
+  },
+  "cube": [
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "果汁ジュース",
+      "rep": "佐藤",
+      "amount": 900,
+      "quantity": 5,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "果汁ジュース",
+      "rep": "中村",
+      "amount": 180,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "果汁ジュース",
+      "rep": "田中",
+      "amount": 7200,
+      "quantity": 40,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "果汁ジュース",
+      "rep": "鈴木",
+      "amount": 720,
+      "quantity": 4,
+      "rows": 2
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "炭酸水1L",
+      "rep": "山本",
+      "amount": 320,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "炭酸水1L",
+      "rep": "田中",
+      "amount": 1600,
+      "quantity": 10,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "炭酸水1L",
+      "rep": "鈴木",
+      "amount": 4800,
+      "quantity": 30,
+      "rows": 2
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "麦茶2L",
+      "rep": "伊藤",
+      "amount": 210,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "麦茶2L",
+      "rep": "高橋",
+      "amount": 210,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "麦茶2L",
+      "rep": "田中",
+      "amount": 210,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "緑茶500ml",
+      "rep": "中村",
+      "amount": 600,
+      "quantity": 5,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "緑茶500ml",
+      "rep": "渡辺",
+      "amount": 360,
+      "quantity": 3,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "飲料",
+      "product": "緑茶500ml",
+      "rep": "鈴木",
+      "amount": 120,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "家電",
+      "product": "ドライヤー",
+      "rep": "渡辺",
+      "amount": 5980,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "家電",
+      "product": "加湿器",
+      "rep": "鈴木",
+      "amount": 19600,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "家電",
+      "product": "電気ケトル",
+      "rep": "鈴木",
+      "amount": 15920,
+      "quantity": 4,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "カップ麺",
+      "rep": "伊藤",
+      "amount": 990,
+      "quantity": 5,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "パスタ1kg",
+      "rep": "高橋",
+      "amount": 3150,
+      "quantity": 7,
+      "rows": 3
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "パスタ1kg",
+      "rep": "佐藤",
+      "amount": 2250,
+      "quantity": 5,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "パスタ1kg",
+      "rep": "山本",
+      "amount": 1350,
+      "quantity": 3,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "パスタ1kg",
+      "rep": "渡辺",
+      "amount": 450,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "レトルトカレー",
+      "rep": "山本",
+      "amount": 298,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "レトルトカレー",
+      "rep": "田中",
+      "amount": 894,
+      "quantity": 3,
+      "rows": 2
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "缶詰セット",
+      "rep": "伊藤",
+      "amount": 1960,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "缶詰セット",
+      "rep": "渡辺",
+      "amount": 1960,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "缶詰セット",
+      "rep": "鈴木",
+      "amount": 1960,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "食品",
+      "product": "冷凍餃子",
+      "rep": "伊藤",
+      "amount": 3980,
+      "quantity": 10,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "日用品",
+      "product": "トイレットペーパー12R",
+      "rep": "高橋",
+      "amount": 2990,
+      "quantity": 5,
+      "rows": 4
+    },
+    {
+      "month": "2026-10",
+      "category": "日用品",
+      "product": "トイレットペーパー12R",
+      "rep": "田中",
+      "amount": 1794,
+      "quantity": 3,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "日用品",
+      "product": "食器用洗剤",
+      "rep": "伊藤",
+      "amount": 218,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "コピー用紙A4",
+      "rep": "高橋",
+      "amount": 650,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "コピー用紙A4",
+      "rep": "山本",
+      "amount": 1300,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "ファイル10冊",
+      "rep": "中村",
+      "amount": 2400,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "ボールペン10本",
+      "rep": "佐藤",
+      "amount": 880,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "ボールペン10本",
+      "rep": "山本",
+      "amount": 1760,
+      "quantity": 2,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "ボールペン10本",
+      "rep": "中村",
+      "amount": 2640,
+      "quantity": 3,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "付箋セット",
+      "rep": "田中",
+      "amount": 450,
+      "quantity": 1,
+      "rows": 1
+    },
+    {
+      "month": "2026-10",
+      "category": "文具",
+      "product": "付箋セット",
+      "rep": "鈴木",
+      "amount": 450,
+      "quantity": 1,
+      "rows": 1
+    }
+  ]
+}

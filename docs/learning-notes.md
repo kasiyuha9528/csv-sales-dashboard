@@ -50,6 +50,30 @@
 
 ---
 
+## Step 3:ログイン、ログアウト
+
+### やったこと
+- Supabaseの管理画面で、テスト用のユーザーを作成した(「Auto Confirm User」をオンにして、確認メールなしでログインできるようにした)
+- Supabaseにつなぐ部品を、ブラウザ用(`lib/supabase/client.ts`)とサーバー用(`lib/supabase/server.ts`)に分けて作った
+- `proxy.ts` で、リクエストのたびにログイン状態を確認し、未ログインなら `/login` へ、ログイン済みで `/login` を開いたら `/` へ移動させるようにした
+- ログイン画面(`app/login/page.tsx`)とログアウトボタンを作った。エラーは要件定義書の文言で、原因別に表示する
+- 確認用の仮のトップ画面を作り、ログイン中のメールアドレスと、`uploads` を読めたかどうかを表示した
+
+### 学んだこと
+- ログインの判定には `getClaims()` を使う。ログイン情報(トークン)の署名を検証してから返すため、偽のCookieを信用しない。`getSession()` はCookieの値を検証せずに返すので、サーバー側の判定に使ってはいけない
+- `@supabase/ssr` は、ログイン情報をCookieに保存する。サーバー側でもログイン状態を読めるのはこのため
+- `proxy.ts` では、Cookieを更新した `supabaseResponse` をそのまま返す必要がある。別のレスポンスを新しく作るとCookieの更新が失われ、勝手にログアウトされる原因になる
+- Server ComponentではCookieを書き換えられないので、`server.ts` の `setAll` は失敗しても無視する。ログイン状態の更新は `proxy.ts` が担当している
+- ログイン成功後は `router.replace("/")` で移動し、`router.refresh()` でサーバー側の表示も更新する。`replace` を使うと、ブラウザの「戻る」でログイン画面に戻らない
+- ログインしていない人がAPIを直接呼ぶと、`42501`(permission denied)が返る。Step2で権限をログイン済みの人にだけ付けた効果を、curlで確認できた。エラーの `hint` には「anonに権限を付ける」方法が出るが、今回の設計では実行しない
+
+### つまずいた点と解決方法
+- **症状**:ログインすると「現在ご利用いただけません」と表示された。詳細は `AuthApiError: Invalid path specified in request URL` だった。続けてcurlで確認すると、`requested path is invalid` が返った
+- **原因**:`.env.local` の `NEXT_PUBLIC_SUPABASE_URL` に、後ろに余計なパスが付いたURLを貼っていた。そのため、ログインの通信先が存在しないパスになっていた。curlでも、同じURLをもとにしたため `/rest/v1/` が二重になっていた
+- **解決**:URLを `https://xxxxxxxx.supabase.co` の形(`.supabase.co` で終わる)に直し、`npm run dev` を再起動した。環境変数は起動時にだけ読み込まれるので、変更したら再起動が必要
+
+---
+
 ## 振り返り
 
 - **うまくいったこと**:{}
@@ -72,6 +96,14 @@
 | `on delete cascade` | 親の行を消したとき、それを参照する子の行もまとめて消す |
 | `check (...)` | 列に入れられる値の条件を決める制約 |
 | `npm install @supabase/supabase-js @supabase/ssr` | Supabaseにつなぐためのパッケージを入れる。`ssr` はログイン情報をCookieで扱うためのもの |
+| `createBrowserClient` / `createServerClient` | `@supabase/ssr` の関数。ブラウザ用・サーバー用のSupabaseクライアントを作る |
+| `supabase.auth.signInWithPassword` | メールアドレスとパスワードでログインする |
+| `supabase.auth.signOut` | ログアウトする |
+| `supabase.auth.getClaims` | ログイン情報の署名を検証して、ログイン中のユーザーの情報を返す |
+| `proxy`(`proxy.ts`) | 全リクエストの前に実行される関数。ここでログイン状態を確認した |
+| `NextResponse.redirect` | 別のページへ移動させるレスポンスを返す |
+| `router.replace` / `router.refresh` | 履歴を残さずにページを移動する / サーバー側の表示を取り直す |
+| `curl.exe -s ... -H "apikey: ..."` | ブラウザを使わずにAPIを呼ぶ。ヘッダーにキーを付けて、ログインしていない状態を再現した |
 
 ### 用語
 
@@ -86,3 +118,7 @@
 | Publishable key | ブラウザに出してもよいSupabaseのキー。データはRLSで守る |
 | Secret key | RLSを無視して全データを操作できるキー。サーバー側だけで使い、公開しない |
 | インデックス | 検索や集計を速くするための索引。よく絞り込む列に付ける |
+| Cookie | ブラウザが保存し、リクエストのたびにサーバーへ送る小さなデータ。ログイン情報の保存に使う |
+| トークン | ログインしていることを証明するデータ。署名が付いていて、改ざんを見分けられる |
+| リダイレクト | 開こうとしたページから、別のページへ自動で移動させること |
+| `42501` | PostgreSQLのエラーコード。権限がない(permission denied)ことを表す |
