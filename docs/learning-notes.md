@@ -172,6 +172,33 @@
 
 ---
 
+## Step 8:ダッシュボード画面(KPI・月次推移・商品別)
+
+### やったこと
+- `supabase/step8_options.sql` を実行し、関数 `get_filter_options` を作った。有効なデータの最初の月・最後の月・カテゴリ一覧・担当者一覧を返す
+- Rechartsを入れ、ダッシュボードを作った。KPIカード(売上合計・前年同期比)、月次推移の折れ線(当年=実線、前年同月=点線)、商品別の表
+- 初期表示の期間を、データの最後の月から直近12か月(2025/11〜2026/10)にした
+- データがないときの案内と、読み込みに失敗したときの「再読み込み」ボタンを付けた
+- 10万行のデータで、売上合計 ¥139,757,614・前年同期比 ▲9.4%・商品別22商品となり、正解データから計算した値と一致することを確認した
+- ビルドエラー(下記)を、データを読む部分を `<Suspense>` で囲んで解消した
+
+### 学んだこと
+- 3つの集計関数は `Promise.all` で同時に呼ぶ。順番に呼ぶより待ち時間が短くなる
+- RPCから返る数値は、型が文字列のこともあるので `Number()` で数値にそろえてから使う
+- グラフ(Recharts)はブラウザで動く部品なので Client Component にし、データの取得はサーバー側(Server Component)で行って、結果だけを渡した
+- 吹き出し(Tooltip)の中身は、自分で作った部品を `content` に渡すと自由に作れる
+- Next.js 16では、create-next-app の初期設定で `cacheComponents` が有効になっている。この設定では、ページの外枠をビルド時に先に作り、Cookieなど「リクエストのたびに変わる値」を読む部分は `<Suspense>` で囲んであとから流し込む
+- `<Suspense>` の `fallback` に仮の表示(スケルトン)を置くと、外枠がすぐに出て、データの部分は読み込み中であることが伝わる
+- `try/catch` の中でCookieを読むと、Next.jsが内部で投げる合図まで受け止めてしまう。`catch` の最初で `unstable_rethrow(e)` を呼び、Next.jsの合図は投げ直す
+- `AGENTS.md` に「このバージョンのNext.jsは知識と違う。`node_modules/next/dist/docs/` を読むこと」とあった。新しいバージョンでは、インストールされたドキュメントで確認するのが確実
+
+### つまずいた点と解決方法
+- **症状**:`npm run build` が、`During prerendering, cookies() rejects when the prerender is complete` と `Next.js encountered uncached or runtime data during prerendering` で失敗した(`npm run dev` では問題なく表示できていた)
+- **原因**:`cacheComponents: true` が有効で、ビルド時にページを事前に作ろうとした。そのとき、`<Suspense>` で囲んでいない場所でCookieを読んでいた(ヘッダーのメールアドレス、ダッシュボードと取り込み履歴のデータ取得)
+- **解決**:Cookieを読む部分を別の部品に分けて `<Suspense>` で囲んだ。あわせて、読み込み失敗のための `try/catch` に `unstable_rethrow` を入れた。ビルド結果で `/`・`/upload`・`/uploads` が「◐(Partial Prerender)」になった
+
+---
+
 ## 振り返り
 
 - **うまくいったこと**:{}
@@ -224,6 +251,11 @@
 | `npm test`(`vitest run`) | テストをすべて実行する |
 | `test.each([...])` | 同じテストを、条件を変えて何回も実行する(Vitest) |
 | `expect(...).toEqual(...)` | 2つの値の中身が同じかを確かめる(Vitest) |
+| `<Suspense fallback={...}>` | 中の部品の準備ができるまで `fallback` を表示する。データを読む部分を、ページの外枠と分けるのに使った |
+| `unstable_rethrow(e)` | `catch` で受け止めたエラーのうち、Next.jsが内部で使うものを投げ直す |
+| `<LineChart>` / `<Line>` | Rechartsで折れ線グラフを描く。`strokeDasharray` で点線にできる |
+| `<ResponsiveContainer>` | グラフを、親の要素の幅に合わせて伸び縮みさせる(Recharts) |
+| `npm run build` | 本番用にビルドする。`npm run dev` では出ないエラーが見つかることがある |
 
 ### 用語
 
@@ -255,3 +287,7 @@
 | 突合テスト | 画面やデータベースの集計結果が、元のデータから計算した正解と一致するかを確かめるテスト |
 | Vitest | JavaScript・TypeScriptのテストを実行するツール |
 | 境界値 | 範囲の端の値(月初・月末、年またぎなど)。間違いが起きやすいので、テストで重点的に確かめる |
+| Cache Components(`cacheComponents`) | Next.js 16の描画の仕組み。ページの外枠を事前に作り、リクエストごとに変わる部分をあとから流し込む |
+| ストリーミング | ページの準備ができた部分から、順にブラウザへ送って表示すること |
+| スケルトン | 読み込み中に、内容の形だけを灰色などで表示しておく仮の表示 |
+| Partial Prerender(◐) | ビルド結果の記号。ページの一部を事前に作り、残りをリクエスト時に流し込む |
