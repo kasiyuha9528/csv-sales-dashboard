@@ -15,7 +15,8 @@
     "next": "16.4.6",
     "papaparse": "^5.7.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",

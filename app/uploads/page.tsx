@@ -1,4 +1,6 @@
 // 取り込み履歴
+// cacheComponents が有効なので、データを読む部分(UploadList)を <Suspense> で囲む
+import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/app/components/AppHeader";
@@ -41,17 +43,7 @@ function statusOf(u: Upload) {
   return { label: "有効", className: "bg-[#E6F4EC] text-[#145C37]" };
 }
 
-export default async function UploadsPage() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("uploads")
-    .select(
-      "id, created_at, file_name, period_from, period_to, row_count, total_amount, original_row_count, original_total_amount, status, uploader_email",
-    )
-    .order("created_at", { ascending: false });
-
-  const uploads = (data ?? []) as Upload[];
-
+export default function UploadsPage() {
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-[#1A1D21]">
       <AppHeader current="/uploads" />
@@ -71,87 +63,115 @@ export default async function UploadsPage() {
           </Link>
         </div>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg bg-[#FDF0EA] px-4 py-3 text-sm text-[#8A2F08]"
-          >
-            データを読み込めませんでした。時間をおいて再読み込みしてください
-          </p>
-        )}
-
-        <section
-          aria-label="履歴一覧"
-          className="rounded-xl border border-[#E2E5EA] bg-white px-5 py-2"
+        <Suspense
+          fallback={
+            <div
+              aria-busy="true"
+              aria-label="読み込み中"
+              className="h-64 animate-pulse rounded-xl bg-white"
+            />
+          }
         >
-          {uploads.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[#5B6270]">
-              まだ取り込みはありません
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[960px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-[#E2E5EA] text-left text-[#5B6270]">
-                    <th className="px-2 py-3 font-semibold">取り込み日時</th>
-                    <th className="px-2 py-3 font-semibold">ファイル名</th>
-                    <th className="px-2 py-3 font-semibold">対象期間</th>
-                    <th className="px-2 py-3 text-right font-semibold">行数</th>
-                    <th className="px-2 py-3 text-right font-semibold">合計金額</th>
-                    <th className="px-2 py-3 font-semibold">状態</th>
-                    <th className="px-2 py-3 font-semibold">取り込んだ人</th>
-                    <th className="px-2 py-3">
-                      <span className="sr-only">操作</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {uploads.map((u) => {
-                    const s = statusOf(u);
-                    const changed = u.row_count !== u.original_row_count;
-                    return (
-                      <tr key={u.id} className="border-b border-[#F0F1F4] align-top">
-                        <td className="px-2 py-3 whitespace-nowrap">{dateTime(u.created_at)}</td>
-                        <td className="px-2 py-3 font-medium">{u.file_name}</td>
-                        <td className="px-2 py-3 whitespace-nowrap">
-                          {u.period_from} 〜 {u.period_to}
-                        </td>
-                        <td className="px-2 py-3 text-right whitespace-nowrap">
-                          {num(u.row_count)}
-                          {changed && (
-                            <span className="block text-xs text-[#5B6270]">
-                              取り込み時 {num(u.original_row_count)}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-right whitespace-nowrap">
-                          {yen(u.total_amount)}
-                          {changed && (
-                            <span className="block text-xs text-[#5B6270]">
-                              取り込み時 {yen(u.original_total_amount)}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3">
-                          <span
-                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${s.className}`}
-                          >
-                            {s.label}
-                          </span>
-                        </td>
-                        <td className="px-2 py-3 text-[#3D434D]">{u.uploader_email ?? "—"}</td>
-                        <td className="px-2 py-3 text-right whitespace-nowrap">
-                          <DeleteUploadButton id={u.id} fileName={u.file_name} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+          <UploadList />
+        </Suspense>
       </main>
     </div>
+  );
+}
+
+async function UploadList() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("uploads")
+    .select(
+      "id, created_at, file_name, period_from, period_to, row_count, total_amount, original_row_count, original_total_amount, status, uploader_email",
+    )
+    .order("created_at", { ascending: false });
+
+  const uploads = (data ?? []) as Upload[];
+
+  return (
+    <>
+      {error && (
+        <p
+          role="alert"
+          className="rounded-lg bg-[#FDF0EA] px-4 py-3 text-sm text-[#8A2F08]"
+        >
+          データを読み込めませんでした。時間をおいて再読み込みしてください
+        </p>
+      )}
+
+      <section
+        aria-label="履歴一覧"
+        className="rounded-xl border border-[#E2E5EA] bg-white px-5 py-2"
+      >
+        {uploads.length === 0 ? (
+          <p className="py-8 text-center text-sm text-[#5B6270]">
+            まだ取り込みはありません
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-[#E2E5EA] text-left text-[#5B6270]">
+                  <th className="px-2 py-3 font-semibold">取り込み日時</th>
+                  <th className="px-2 py-3 font-semibold">ファイル名</th>
+                  <th className="px-2 py-3 font-semibold">対象期間</th>
+                  <th className="px-2 py-3 text-right font-semibold">行数</th>
+                  <th className="px-2 py-3 text-right font-semibold">合計金額</th>
+                  <th className="px-2 py-3 font-semibold">状態</th>
+                  <th className="px-2 py-3 font-semibold">取り込んだ人</th>
+                  <th className="px-2 py-3">
+                    <span className="sr-only">操作</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {uploads.map((u) => {
+                  const s = statusOf(u);
+                  const changed = u.row_count !== u.original_row_count;
+                  return (
+                    <tr key={u.id} className="border-b border-[#F0F1F4] align-top">
+                      <td className="px-2 py-3 whitespace-nowrap">{dateTime(u.created_at)}</td>
+                      <td className="px-2 py-3 font-medium">{u.file_name}</td>
+                      <td className="px-2 py-3 whitespace-nowrap">
+                        {u.period_from} 〜 {u.period_to}
+                      </td>
+                      <td className="px-2 py-3 text-right whitespace-nowrap">
+                        {num(u.row_count)}
+                        {changed && (
+                          <span className="block text-xs text-[#5B6270]">
+                            取り込み時 {num(u.original_row_count)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-3 text-right whitespace-nowrap">
+                        {yen(u.total_amount)}
+                        {changed && (
+                          <span className="block text-xs text-[#5B6270]">
+                            取り込み時 {yen(u.original_total_amount)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-3">
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${s.className}`}
+                        >
+                          {s.label}
+                        </span>
+                      </td>
+                      <td className="px-2 py-3 text-[#3D434D]">{u.uploader_email ?? "—"}</td>
+                      <td className="px-2 py-3 text-right whitespace-nowrap">
+                        <DeleteUploadButton id={u.id} fileName={u.file_name} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
   );
 }
