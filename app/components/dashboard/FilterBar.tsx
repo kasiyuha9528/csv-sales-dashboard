@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { DashboardFilter } from "@/lib/dashboard/fetchDashboard";
 import { toggleChip, toQuery, type ChartType } from "@/lib/dashboard/params";
 import { addMonths, monthLabel } from "@/lib/dashboard/period";
+import { markStart } from "@/lib/perf/marks";
 
 type Props = {
   filter: DashboardFilter;
@@ -28,6 +29,7 @@ export default function FilterBar({ filter, minMonth, maxMonth, categories, reps
     const chart: ChartType =
       new URLSearchParams(window.location.search).get("chart") === "bar" ? "bar" : "line";
     const url = next ? `/?${toQuery(next, chart)}` : chart === "bar" ? "/?chart=bar" : "/";
+    markStart("filter"); // 性能の計測(Step 10)
     startTransition(() => router.push(url, { scroll: false }));
   }
 

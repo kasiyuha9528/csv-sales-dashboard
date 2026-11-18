@@ -14,6 +14,7 @@ import {
   type ImportResult,
   type ReplacementPreview,
 } from "@/lib/upload/importSales";
+import { markStart } from "@/lib/perf/marks";
 
 type State =
   | { stage: "select" }
@@ -283,6 +284,7 @@ export default function UploadForm() {
           <div className="mt-1.5 flex flex-wrap justify-center gap-3">
             <Link
               href="/"
+              onClick={() => markStart("import")} // 性能の計測(Step 10)
               className="rounded-lg bg-[#2F5BD3] px-5 py-3 text-sm font-bold text-white"
             >
               ダッシュボードで確認する

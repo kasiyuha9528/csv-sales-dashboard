@@ -11,10 +11,12 @@ import ReloadButton from "@/app/components/ReloadButton";
 import KpiCards from "@/app/components/dashboard/KpiCards";
 import FilterBar from "@/app/components/dashboard/FilterBar";
 import MonthlyChart from "@/app/components/dashboard/MonthlyChart";
+import PerfProbe from "@/app/components/dashboard/PerfProbe";
 import ProductTable from "@/app/components/dashboard/ProductTable";
 import { fetchDashboard, fetchOptions } from "@/lib/dashboard/fetchDashboard";
-import { parseParams } from "@/lib/dashboard/params";
+import { parseParams, toQuery } from "@/lib/dashboard/params";
 import { monthLabel } from "@/lib/dashboard/period";
+import { PERF_ENABLED } from "@/lib/perf/marks";
 
 const dateTime = (iso: string) =>
   new Date(iso).toLocaleString("ja-JP", {
@@ -114,6 +116,8 @@ async function Dashboard({
       <KpiCards kpi={data.kpi} conditionLabel={conditionLabel} />
       <MonthlyChart rows={data.monthly} initialChart={chart} />
       <ProductTable rows={data.products} total={data.kpi.current} />
+      {/* 性能の計測(Step 10)。開発中だけ表示し、条件が変わるたびに作り直して測る */}
+      {PERF_ENABLED && <PerfProbe key={toQuery(filter, chart)} />}
     </>
   );
 }
