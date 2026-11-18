@@ -36,18 +36,29 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isLoginPage = path.startsWith("/login");
 
+  // 別のページへ移動させる。Supabase が更新した Cookie(無効なログイン情報の削除など)も引き継ぐ
+  function redirectTo(pathname: string, reason?: string) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname;
+    url.search = reason ? `?reason=${reason}` : "";
+    const res = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c));
+    return res;
+  }
+
   // 未ログインで、ログイン画面以外を開こうとした → ログイン画面へ
   if (!user && !isLoginPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    // ログイン情報の Cookie が残っているのに認められない = 期限切れ・無効になった
+    // (初めて開いたとき・ログアウト後は Cookie がないので、メッセージは出さない)
+    const hadSession = request.cookies
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+    return redirectTo("/login", hadSession ? "expired" : undefined);
   }
 
   // ログイン済みで、ログイン画面を開こうとした → ダッシュボードへ
   if (user && isLoginPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+    return redirectTo("/");
   }
 
   // Cookieの更新を反映した supabaseResponse を、そのまま返す

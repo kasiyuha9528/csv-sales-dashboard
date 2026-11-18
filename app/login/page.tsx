@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -53,6 +53,13 @@ export default function LoginPage() {
           className="flex flex-col gap-4 rounded-xl border border-[#E2E5EA] bg-white p-8"
         >
           <h1 className="text-xl font-bold">ログイン</h1>
+
+          {/* 期限切れでログイン画面に戻されたときの案内。URLを読むので <Suspense> で囲む */}
+          {!error && (
+            <Suspense fallback={null}>
+              <ExpiredNotice />
+            </Suspense>
+          )}
 
           {error && (
             <p
@@ -107,5 +114,19 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+// /login?reason=expired のときだけ表示する(要件定義書 5章)
+function ExpiredNotice() {
+  const reason = useSearchParams().get("reason");
+  if (reason !== "expired") return null;
+  return (
+    <p
+      role="status"
+      className="rounded-lg bg-[#FFF8EC] px-3 py-2 text-sm text-[#7A4A06]"
+    >
+      ログインの有効期限が切れました。もう一度ログインしてください
+    </p>
   );
 }
